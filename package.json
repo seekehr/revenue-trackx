@@ -7,7 +7,7 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "pages:build": "opennext-cloudflare",
+    "pages:build": "@opennextjs/cloudflare",
     "pages:dev": "wrangler pages dev .open-next/worker --compatibility-flag=nodejs_compat"
   },
   "dependencies": {
