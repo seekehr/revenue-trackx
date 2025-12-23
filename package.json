@@ -7,8 +7,9 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "pages:build": "opennextjs-cloudflare build",
-    "pages:dev": "wrangler pages dev .open-next/worker --compatibility-flag=nodejs_compat"
+    "pages:build": "opennextjs-cloudflare build && cp .open-next/worker.js .open-next/_worker.js && cp -r .open-next/assets/* .open-next/",
+    "pages:dev": "wrangler dev",
+    "deploy": "npm run pages:build && wrangler deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
