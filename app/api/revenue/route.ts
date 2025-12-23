@@ -1,38 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { getDatabase, generateUserHash } from "@/lib/db"
+import { getDatabase } from "@/lib/db"
+import { getCloudflareEnv } from "@/lib/cloudflare"
 
-// Helper to get Cloudflare env (when deployed to Cloudflare Pages)
-function getCloudflareEnv(): any {
-  // @ts-ignore - Cloudflare Pages context
-  return typeof process !== "undefined" && process.env?.DB ? process.env : null
-}
-
-async function getUserHash(): Promise<string | null> {
+async function getUsername(): Promise<string | null> {
   const cookieStore = await cookies()
-  const username = cookieStore.get("username")?.value
-  const passwordHash = cookieStore.get("passwordHash")?.value
-
-  if (!username || !passwordHash) {
-    return null
-  }
-
-  // Generate user hash from username and password hash
-  return await generateUserHash(username, passwordHash)
+  return cookieStore.get("username")?.value || null
 }
 
 export async function GET() {
   try {
-    const userHash = await getUserHash()
-    if (!userHash) {
+    const username = await getUsername()
+    if (!username) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const db = getDatabase(getCloudflareEnv())
-    const revenue = await db.getRevenue(userHash)
+    const revenues = await db.getRevenues(username)
 
-    // Return empty array if no revenue entry exists yet
-    return NextResponse.json(revenue ? [revenue] : [])
+    return NextResponse.json(revenues)
   } catch (error) {
     console.error("GET error:", error)
     return NextResponse.json({ error: "Failed to fetch revenue" }, { status: 500 })
@@ -41,8 +27,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const userHash = await getUserHash()
-    if (!userHash) {
+    const username = await getUsername()
+    if (!username) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -54,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     const db = getDatabase(getCloudflareEnv())
     const timestamp = new Date().toISOString()
-    const entry = await db.upsertRevenue(userHash, Number.parseFloat(amount), timestamp)
+    const entry = await db.createRevenue(username, Number.parseFloat(amount), timestamp)
 
     return NextResponse.json(entry)
   } catch (error) {

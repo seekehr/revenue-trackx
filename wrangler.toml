@@ -1,11 +1,11 @@
 name = "revenue-trackx"
 compatibility_date = "2024-01-01"
 
+# Pages configuration
+pages_build_output_dir = ".vercel/output/static"
+
 # D1 Database binding
 [[d1_databases]]
 binding = "DB"
 database_name = "revenue-trackx-db"
-database_id = "your-database-id-here"  # Run: wrangler d1 create revenue-trackx-db
-
-# Pages configuration
-pages_build_output_dir = ".vercel/output/static"
+database_id = "a6f44a8c-356e-4576-8c3d-7ca6dc4e31f1"

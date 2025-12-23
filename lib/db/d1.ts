@@ -1,21 +1,30 @@
 import type { Database, RevenueEntry, User } from "./types"
+import { generateRevenueId } from "./types"
 
 export class D1Database implements Database {
   constructor(private db: D1Database) {}
 
-  async getRevenue(userHash: string): Promise<RevenueEntry | null> {
-    const result = await this.db.prepare("SELECT * FROM revenue WHERE id = ?").bind(userHash).first()
-    return (result as RevenueEntry) || null
+  async getRevenues(username: string): Promise<RevenueEntry[]> {
+    const result = await this.db
+      .prepare("SELECT * FROM revenue WHERE username = ? ORDER BY timestamp DESC")
+      .bind(username)
+      .all()
+    return (result.results as RevenueEntry[]) || []
   }
 
-  async upsertRevenue(userHash: string, amount: number, timestamp: string): Promise<RevenueEntry> {
-    // D1 supports INSERT OR REPLACE
+  async createRevenue(username: string, amount: number, timestamp: string): Promise<RevenueEntry> {
+    const user = await this.getUser(username)
+    if (!user) {
+      throw new Error("User not found")
+    }
+
+    const id = await generateRevenueId(username, user.password, timestamp)
     await this.db
-      .prepare("INSERT OR REPLACE INTO revenue (id, amount, timestamp) VALUES (?, ?, ?)")
-      .bind(userHash, amount, timestamp)
+      .prepare("INSERT INTO revenue (id, username, amount, timestamp) VALUES (?, ?, ?, ?)")
+      .bind(id, username, amount, timestamp)
       .run()
 
-    return { id: userHash, amount, timestamp }
+    return { id, username, amount, timestamp }
   }
 
   async getUser(username: string): Promise<User | null> {

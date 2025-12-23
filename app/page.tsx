@@ -65,11 +65,11 @@ export default function Page() {
       if (response.ok) {
         const newEntry = await response.json()
         setEntries([
-          ...entries,
           {
             ...newEntry,
             date: new Date(newEntry.timestamp),
           },
+          ...entries,
         ])
         setAmount("")
       }

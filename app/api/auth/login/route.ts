@@ -1,11 +1,6 @@
 import { cookies } from "next/headers"
 import { getDatabase } from "@/lib/db"
-
-// Helper to get Cloudflare env (when deployed to Cloudflare Pages)
-function getCloudflareEnv(): any {
-  // @ts-ignore - Cloudflare Pages context
-  return typeof process !== "undefined" && process.env?.DB ? process.env : null
-}
+import { getCloudflareEnv } from "@/lib/cloudflare"
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder()

@@ -18,4 +18,4 @@ export function getDatabase(cloudflareEnv?: any): Database {
 }
 
 export type { Database, RevenueEntry, User } from "./types"
-export { generateUserHash } from "./types"
+export { generateRevenueId } from "./types"

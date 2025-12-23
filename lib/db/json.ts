@@ -1,9 +1,10 @@
 import type { Database, RevenueEntry, User } from "./types"
+import { generateRevenueId } from "./types"
 import { promises as fs } from "fs"
 import path from "path"
 
 interface JsonData {
-  revenues: Record<string, RevenueEntry>
+  revenues: RevenueEntry[]
   users: User[]
 }
 
@@ -31,10 +32,27 @@ export class JsonDatabase implements Database {
 
     try {
       const content = await fs.readFile(this.dataPath, "utf-8")
-      this.data = JSON.parse(content)
-      return this.data!
+      const rawData = JSON.parse(content)
+
+      // Migration: convert old format (revenues as object) to new format (revenues as array)
+      if (rawData.revenues && !Array.isArray(rawData.revenues)) {
+        rawData.revenues = Object.values(rawData.revenues)
+      }
+
+      // Ensure revenues is always an array
+      if (!rawData.revenues) {
+        rawData.revenues = []
+      }
+      if (!rawData.users) {
+        rawData.users = []
+      }
+
+      this.data = rawData as JsonData
+      // Save migrated data
+      await this.saveData()
+      return this.data
     } catch {
-      this.data = { revenues: {}, users: [] }
+      this.data = { revenues: [], users: [] }
       await this.saveData()
       return this.data
     }
@@ -45,19 +63,28 @@ export class JsonDatabase implements Database {
     await fs.writeFile(this.dataPath, JSON.stringify(this.data, null, 2), "utf-8")
   }
 
-  async getRevenue(userHash: string): Promise<RevenueEntry | null> {
+  async getRevenues(username: string): Promise<RevenueEntry[]> {
     const data = await this.loadData()
-    return data.revenues[userHash] || null
+    return data.revenues
+      .filter((r) => r.username === username)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
   }
 
-  async upsertRevenue(userHash: string, amount: number, timestamp: string): Promise<RevenueEntry> {
+  async createRevenue(username: string, amount: number, timestamp: string): Promise<RevenueEntry> {
     const data = await this.loadData()
+    const user = data.users.find((u) => u.username === username)
+    if (!user) {
+      throw new Error("User not found")
+    }
+
+    const id = await generateRevenueId(username, user.password, timestamp)
     const newEntry: RevenueEntry = {
-      id: userHash,
+      id,
+      username,
       amount,
       timestamp,
     }
-    data.revenues[userHash] = newEntry
+    data.revenues.push(newEntry)
     await this.saveData()
     return newEntry
   }
