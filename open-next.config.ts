@@ -3,8 +3,22 @@ const config = {
     override: {
       wrapper: "cloudflare-node",
       converter: "edge",
-      // Ensure D1 bindings are available
+      proxyExternalRequest: "fetch",
       incrementalCache: "dummy",
+      tagCache: "dummy",
+      queue: "dummy",
+    },
+  },
+  edgeExternals: [],
+  middleware: {
+    external: true,
+    override: {
+      wrapper: "cloudflare-edge",
+      converter: "edge",
+      proxyExternalRequest: "fetch",
+      incrementalCache: "dummy",
+      tagCache: "dummy",
+      queue: "dummy",
     },
   },
 }
