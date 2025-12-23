@@ -11,6 +11,10 @@ export function getDatabase(cloudflareEnv?: any): Database {
   }
 
   // In development, use JSON file storage (singleton)
+  if (process.env.NODE_ENV === "production" || process.env.NEXTJS_ENV === "production") {
+    throw new Error("Missing database binding (DB). Ensure your Cloudflare Pages D1 binding is configured with name 'DB'.")
+  }
+
   if (!dbInstance) {
     dbInstance = new JsonDatabase()
   }

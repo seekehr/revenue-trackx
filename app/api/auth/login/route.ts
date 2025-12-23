@@ -12,23 +12,33 @@ async function hashPassword(password: string): Promise<string> {
 
 export async function POST(request: Request) {
   try {
-    const { username, password } = await request.json()
+    const body = await request.json()
+    const { username, password } = body
+    console.log("[Revenue Trackx] Login attempt for:", username)
 
     // Validation
     if (!username || !password) {
+      console.warn("[Revenue Trackx] Missing username or password")
       return Response.json({ error: "Username and password are required" }, { status: 400 })
     }
 
-    const db = getDatabase(getCloudflareEnv())
+    const env = getCloudflareEnv()
+    console.log("[Revenue Trackx] Environment retrieved. DB present:", !!env?.DB)
+
+    const db = getDatabase(env)
+    console.log("[Revenue Trackx] Database instance obtained")
 
     // Check user exists and password matches
     const user = await db.getUser(username)
+    console.log("[Revenue Trackx] User lookup complete. Found:", !!user)
+
     if (!user) {
       return Response.json({ error: "Invalid username or password" }, { status: 401 })
     }
 
     const hashedPassword = await hashPassword(password)
     if (user.password !== hashedPassword) {
+      console.warn("[Revenue Trackx] Password mismatch for:", username)
       return Response.json({ error: "Invalid username or password" }, { status: 401 })
     }
 
@@ -36,7 +46,7 @@ export async function POST(request: Request) {
     const cookieStore = await cookies()
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Always secure on Cloudflare
       sameSite: "lax" as const,
       maxAge: 60 * 60 * 24 * 30, // 30 days
     }
@@ -44,9 +54,14 @@ export async function POST(request: Request) {
     cookieStore.set("username", username, cookieOptions)
     cookieStore.set("passwordHash", hashedPassword, cookieOptions)
 
+    console.log("[Revenue Trackx] Login successful for:", username)
     return Response.json({ success: true })
-  } catch (error) {
-    console.error("[Revenue Trackx] Login error:", error)
-    return Response.json({ error: "An error occurred during login" }, { status: 500 })
+  } catch (error: any) {
+    console.error("[Revenue Trackx] Login error details:", {
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause
+    })
+    return Response.json({ error: "An error occurred during login: " + error.message }, { status: 500 })
   }
 }
