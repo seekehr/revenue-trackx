@@ -1,8 +1,10 @@
 import type { Database, RevenueEntry, User } from "./types"
 import { generateRevenueId } from "./types"
 
+// Use the global D1Database type from @cloudflare/workers-types if available, 
+// otherwise use 'any' to avoid recursive type reference with the class name.
 export class D1Database implements Database {
-  constructor(private db: D1Database) {}
+  constructor(private db: any) { }
 
   async getRevenues(username: string): Promise<RevenueEntry[]> {
     const result = await this.db
