@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 
+
 export const runtime = "experimental-edge"
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const username = request.cookies.get("username")?.value
 
   // If not authenticated and trying to access protected route, redirect to signup
@@ -29,3 +30,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 }
+
