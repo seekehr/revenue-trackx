@@ -1,8 +1,7 @@
-```javascript
 // Helper to get Cloudflare environment bindings
 export function getCloudflareEnv(): any {
   console.log("[Revenue Trackx] getCloudflareEnv called. NODE_ENV:", process.env.NODE_ENV);
-  
+
   // In development, always use local JSON DB
   if (process.env.NODE_ENV === "development") {
     return null;
@@ -35,4 +34,4 @@ export function getCloudflareEnv(): any {
   console.warn("[Revenue Trackx] No Cloudflare environment found. Falling back to JSON DB (will fail in production)");
   return null;
 }
-```
+
