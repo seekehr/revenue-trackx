@@ -25,3 +25,6 @@ next-env.d.ts
 
 # local development database
 /.database
+
+# OpenNext build output
+/.open-next

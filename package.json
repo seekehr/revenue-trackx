@@ -7,8 +7,8 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "pages:dev": "npx wrangler pages dev .vercel/output/static --compatibility-flag=nodejs_compat"
+    "pages:build": "opennext-cloudflare",
+    "pages:dev": "wrangler pages dev .open-next/worker --compatibility-flag=nodejs_compat"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -63,7 +63,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.5",
+    "@opennextjs/cloudflare": "^1.3.0",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
     "@types/react": "^19",
@@ -72,6 +72,6 @@
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5",
-    "wrangler": "^3.100.0"
+    "wrangler": "^4.53.0"
   }
 }

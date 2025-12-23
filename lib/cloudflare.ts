@@ -6,11 +6,10 @@ export function getCloudflareEnv(): any {
   }
 
   try {
-    // Try to import @cloudflare/next-on-pages for Cloudflare Pages deployment
+    // OpenNext provides env bindings through cloudflare:workers
     // @ts-ignore
-    const { getRequestContext } = require("@cloudflare/next-on-pages")
-    const context = getRequestContext()
-    return context?.env || null
+    const { env } = require("cloudflare:workers")
+    return env || null
   } catch {
     // Not running on Cloudflare Pages, return null (use local JSON DB)
     return null
